@@ -265,64 +265,51 @@
           submittedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        try {
-          // 1 — Save to Firestore (source of truth)
-          const writeTimeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Request timed out. Please check your connection and try again.')), 10000)
-          );
-          await Promise.race([
-            firebase.firestore().collection('inquiries').add(data),
-            writeTimeout
-          ]);
+        // 1 — Save to Firestore in background (non-blocking)
+        firebase.firestore().collection('inquiries').add(data)
+          .then(ref => console.log('Inquiry saved:', ref.id))
+          .catch(err => console.warn('Firestore save failed:', err));
 
-          // 2 — Send email via Resend (fire-and-forget, never blocks confirmation)
-          if (RESEND_API_KEY !== 'YOUR_RESEND_API_KEY') {
+        // 2 — Send email via Resend in background (non-blocking)
+          if (typeof RESEND_API_KEY !== 'undefined' && RESEND_API_KEY !== 'YOUR_RESEND_API_KEY') {
             const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
             const typeLabel   = typeLabels[data.pieceType] || data.pieceType || 'Not specified';
-
             fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${RESEND_API_KEY}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  from:    RESEND_FROM,
-                  to:      ['sales@huxleigh.com'],
-                  subject: `New Commission Inquiry — ${data.name}`,
-                  html: `
-                    <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#333;">
-                      <h2 style="font-weight:300;border-bottom:1px solid #ddd;padding-bottom:1rem;">
-                        New Commission Inquiry
-                      </h2>
-                      <p style="color:#888;font-size:0.85rem;margin-bottom:2rem;">${submittedAt}</p>
-                      <table style="width:100%;border-collapse:collapse;">
-                        ${row('Name',        data.name)}
-                        ${row('Email',       data.email || '—')}
-                        ${row('Phone',       data.phone || '—')}
-                        ${row('Piece Type',  typeLabel)}
-                        ${row('Materials',   data.materials || '—')}
-                        ${row('Timeline',    data.timeline || '—')}
-                        ${row('Referral',    data.referral || '—')}
-                      </table>
-                      ${data.description ? `<h3 style="font-weight:400;margin-top:2rem;">Description</h3><p style="color:#555;line-height:1.7;">${data.description}</p>` : ''}
-                      ${data.notes ? `<h3 style="font-weight:400;margin-top:1.5rem;">Additional Notes</h3><p style="color:#555;line-height:1.7;">${data.notes}</p>` : ''}
-                    </div>`
-                })
-              }).catch(err => console.warn('Email notification failed (inquiry was still saved to admin):', err));
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                from:    RESEND_FROM,
+                to:      ['sales@huxleigh.com'],
+                subject: `New Commission Inquiry — ${data.name}`,
+                html: `
+                  <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#333;">
+                    <h2 style="font-weight:300;border-bottom:1px solid #ddd;padding-bottom:1rem;">
+                      New Commission Inquiry
+                    </h2>
+                    <p style="color:#888;font-size:0.85rem;margin-bottom:2rem;">${submittedAt}</p>
+                    <table style="width:100%;border-collapse:collapse;">
+                      ${row('Name',        data.name)}
+                      ${row('Email',       data.email || '—')}
+                      ${row('Phone',       data.phone || '—')}
+                      ${row('Piece Type',  typeLabel)}
+                      ${row('Materials',   data.materials || '—')}
+                      ${row('Timeline',    data.timeline || '—')}
+                      ${row('Referral',    data.referral || '—')}
+                    </table>
+                    ${data.description ? `<h3 style="font-weight:400;margin-top:2rem;">Description</h3><p style="color:#555;line-height:1.7;">${data.description}</p>` : ''}
+                    ${data.notes ? `<h3 style="font-weight:400;margin-top:1.5rem;">Additional Notes</h3><p style="color:#555;line-height:1.7;">${data.notes}</p>` : ''}
+                  </div>`
+              })
+            }).catch(err => console.warn('Email send failed:', err));
           }
 
-          // 3 — Show confirmation
+          // 3 — Show confirmation immediately
           inquiryForm.classList.add('submitted');
           confirmSection.classList.add('show');
           window.scrollTo({ top: inquiryForm.parentElement.offsetTop, behavior: 'smooth' });
-
-        } catch (err) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Submit Inquiry';
-          alert('There was a problem submitting your inquiry. Please try again or call us directly at 440-334-9168.');
-          console.error('Submission error:', err);
-        }
       });
 
       function row(label, value) {

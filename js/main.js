@@ -67,17 +67,3 @@ if (filterBtns.length) {
   });
 }
 
-// Form — basic validation + submit handler
-const form = document.querySelector('.inquiry-form');
-if (form) {
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const btn = form.querySelector('[type=submit]');
-    btn.textContent = 'Received — We Will Be In Touch';
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'default';
-    btn.style.borderColor = 'var(--gold)';
-    btn.style.color = 'var(--gold)';
-  });
-}
