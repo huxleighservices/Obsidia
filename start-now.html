@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Begin Your Commission — Obsidia</title>
+  <meta name="description" content="Begin a commission with Obsidia. Tell us about your space and what you're after.">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Page-specific overrides */
+    body { overflow-x: hidden; }
+
+    .start-layout {
+      min-height: calc(100vh - var(--nav-h));
+    }
+
+    /* Confirmation state */
+    .form-confirm {
+      display: none;
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .form-confirm.show { display: block; }
+    .form-confirm .label { margin-bottom: 1.2rem; }
+    .form-confirm h2 { font-weight: 300; margin-bottom: 1.5rem; }
+    .form-confirm p { color: var(--cream-70); line-height: 2; max-width: 460px; margin: 0 auto 2.5rem; }
+
+    .inquiry-form.submitted { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav scrolled">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/images/logo.png" alt="Obsidia">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="pieces.html">Pieces</a></li>
+      <li><a href="start-now.html" class="active nav-cta">Start Now</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Two-column layout -->
+  <div class="start-layout">
+
+    <!-- Left: Context -->
+    <div class="start-info">
+      <div class="fade-up">
+        <span class="label">Begin Your Commission</span>
+        <div class="divider-gold"></div>
+        <h1>Tell us about the space<br>you're creating.</h1>
+        <p>
+          We work with a limited number of clients each year. Every commission begins here —
+          with a conversation about what you need, what you love, and what kind of object
+          you want to live with for the next thirty years.
+        </p>
+      </div>
+
+      <div class="process-mini fade-up stagger-2">
+        <span class="label">What Happens Next</span>
+        <div class="mini-steps">
+          <div class="mini-step">
+            <span class="mini-step-num">01</span>
+            <div>
+              <strong>We Review Your Inquiry</strong>
+              <span>Within 48 hours, a member of our studio will review your submission and reach out to confirm interest and availability.</span>
+            </div>
+          </div>
+          <div class="mini-step">
+            <span class="mini-step-num">02</span>
+            <div>
+              <strong>Initial Consultation</strong>
+              <span>A 30–60 minute call or in-person meeting to discuss your space, your needs, and what the piece should do.</span>
+            </div>
+          </div>
+          <div class="mini-step">
+            <span class="mini-step-num">03</span>
+            <div>
+              <strong>Design Proposal</strong>
+              <span>We return with sketches, material options, and a detailed quote. No obligation until you say yes.</span>
+            </div>
+          </div>
+          <div class="mini-step">
+            <span class="mini-step-num">04</span>
+            <div>
+              <strong>We Build It</strong>
+              <span>Once approved, your piece enters our build schedule. Two to three weeks, with updates at every stage. Delivery is white-glove.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Form -->
+    <div class="start-form-wrap fade-in">
+
+      <form class="inquiry-form" novalidate>
+        <h2>Commission Inquiry</h2>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" placeholder="Your name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="your@email.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone (Optional)</label>
+            <input type="tel" id="phone" name="phone" placeholder="+1 (000) 000-0000">
+          </div>
+
+          <div class="form-group">
+            <label for="type">Type of Piece</label>
+            <select id="type" name="type" required>
+              <option value="" disabled selected>Select a category</option>
+              <option value="seating">Seating — Chair, Sofa, Daybed</option>
+              <option value="tables">Tables — Dining, Coffee, Side</option>
+              <option value="storage">Storage — Cabinet, Shelf, Credenza</option>
+              <option value="art-decor">Art &amp; Decor</option>
+              <option value="custom">Custom / Something Else</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label for="description">Tell Us About the Piece</label>
+            <textarea id="description" name="description" rows="4"
+              placeholder="Describe what you have in mind — the space it will live in, how it will be used, any references or feelings you're drawn to." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="materials">Material Preferences (Optional)</label>
+            <input type="text" id="materials" name="materials" placeholder="e.g. walnut, blackened steel, linen">
+          </div>
+
+          <div class="form-group">
+            <label for="timeline">Ideal Completion Date</label>
+            <input type="text" id="timeline" name="timeline" placeholder="e.g. Summer 2026, No Rush">
+          </div>
+
+          <div class="form-group">
+            <label for="referral">How Did You Hear About Us?</label>
+            <input type="text" id="referral" name="referral" placeholder="e.g. Referral, Instagram, Architect">
+          </div>
+
+          <div class="form-group full">
+            <label for="notes">Anything Else We Should Know</label>
+            <textarea id="notes" name="notes" rows="3"
+              placeholder="Architectural context, lifestyle details, constraints, inspiration — whatever feels relevant."></textarea>
+          </div>
+
+        </div>
+
+        <div class="form-submit">
+          <button type="submit" class="btn btn-gold">Submit Inquiry</button>
+        </div>
+        <p class="form-note">
+          We review every inquiry personally. If we're at capacity, we will let you know
+          and add you to our priority list for the next available opening.
+        </p>
+      </form>
+
+      <!-- Confirmation (shown after submit) -->
+      <div class="form-confirm">
+        <span class="label">Inquiry Received</span>
+        <div class="divider-gold" style="margin: 1rem auto;"></div>
+        <h2>Thank you.</h2>
+        <p>
+          We've received your inquiry and will be in touch within 48 hours.
+          In the meantime, feel free to browse our collection.
+        </p>
+        <a href="pieces.html" class="btn btn-light">View the Collection</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img class="footer-brand-logo" src="assets/images/logo.png" alt="Obsidia">
+        <p class="footer-tagline">
+          Singular, hand-built furniture for those who know exactly what they want.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="pieces.html">Pieces</a></li>
+          <li><a href="start-now.html">Start Now</a></li>
+        </ul>
+      </div>
+      <div class="footer-mark">
+        <img src="assets/images/brandmark.png" alt="Obsidia — A Movement Welding Brand">
+      </div>
+      <div class="footer-col">
+        <h4>Collection</h4>
+        <ul>
+          <li><a href="pieces.html">Seating</a></li>
+          <li><a href="pieces.html">Tables</a></li>
+          <li><a href="pieces.html">Storage</a></li>
+          <li><a href="pieces.html">Art &amp; Decor</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Atelier</h4>
+        <p>Inquiries by appointment.<br><br>
+          440-334-9168<br><br>
+          Proudly serving the<br>Greater Cleveland, Ohio area.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 Obsidia. All rights reserved.</span>
+      <span class="footer-copy">Made by hand.</span>
+      <a href="admin.html" class="footer-admin-link">Employee Login</a>
+    </div>
+  </footer>
+
+  <!-- Firebase + EmailJS -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/emailjs-config.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const inquiryForm    = document.querySelector('.inquiry-form');
+    const confirmSection = document.querySelector('.form-confirm');
+
+    if (inquiryForm && confirmSection) {
+      inquiryForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const submitBtn = inquiryForm.querySelector('[type=submit]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting…';
+
+        const data = {
+          name:        document.getElementById('name').value.trim(),
+          email:       document.getElementById('email').value.trim(),
+          phone:       document.getElementById('phone').value.trim(),
+          pieceType:   document.getElementById('type').value,
+          description: document.getElementById('description').value.trim(),
+          materials:   document.getElementById('materials').value.trim(),
+          timeline:    document.getElementById('timeline').value.trim(),
+          referral:    document.getElementById('referral').value.trim(),
+          notes:       document.getElementById('notes').value.trim(),
+          status:      'new',
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+          // 1 — Save to Firestore (source of truth)
+          await firebase.firestore().collection('inquiries').add(data);
+
+          // 2 — Send email notification (best-effort, silent on failure)
+          try {
+            if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+              emailjs.init(EMAILJS_PUBLIC_KEY);
+              await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                from_name:    data.name,
+                from_email:   data.email,
+                from_phone:   data.phone,
+                piece_type:   data.pieceType,
+                description:  data.description,
+                materials:    data.materials,
+                timeline:     data.timeline,
+                referral:     data.referral,
+                notes:        data.notes,
+                submitted_at: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+              });
+            }
+          } catch (emailErr) {
+            console.warn('Email notification failed (form was still saved):', emailErr);
+          }
+
+          // 3 — Show confirmation
+          inquiryForm.classList.add('submitted');
+          confirmSection.classList.add('show');
+          window.scrollTo({ top: inquiryForm.parentElement.offsetTop, behavior: 'smooth' });
+
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Inquiry';
+          alert('There was a problem submitting your inquiry. Please try again or call us directly at 440-334-9168.');
+          console.error('Submission error:', err);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

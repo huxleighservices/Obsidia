@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Obsidia</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ---- Login ---- */
+    .admin-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-box { width: 100%; max-width: 400px; padding: 3rem; background: var(--bg-card); border: 1px solid var(--cream-08); }
+    .login-logo { height: 26px; margin-bottom: 1.8rem; }
+    .login-label { font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 2.2rem; }
+    .login-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.6rem; }
+    .login-field label { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); }
+    .login-field input { background: transparent; border: none; border-bottom: 1px solid var(--cream-20); color: var(--cream); font-family: var(--font); font-size: 0.95rem; font-weight: 300; padding: 0.7rem 0; outline: none; width: 100%; transition: border-color 0.3s; }
+    .login-field input:focus { border-bottom-color: var(--gold); }
+    .login-field input::placeholder { color: rgba(221,210,177,0.22); }
+    .login-error { font-size: 0.78rem; color: rgba(220,100,100,0.85); background: rgba(180,60,60,0.12); border: 1px solid rgba(180,60,60,0.2); padding: 0.65rem 0.9rem; margin-bottom: 1.2rem; display: none; }
+    .login-submit { width: 100%; padding: 1rem; background: var(--cream); color: var(--bg); border: 1px solid var(--cream); font-family: var(--font); font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; margin-top: 0.5rem; }
+    .login-submit:hover { background: transparent; color: var(--cream); }
+
+    /* ---- Dashboard ---- */
+    .admin-dashboard { display: none; min-height: 100vh; }
+    .admin-topbar { position: sticky; top: 0; z-index: 200; background: var(--bg-card); border-bottom: 1px solid var(--cream-08); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
+    .topbar-left { display: flex; align-items: center; gap: 1.4rem; }
+    .topbar-logo { height: 22px; }
+    .topbar-title { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); padding-left: 1.4rem; border-left: 1px solid var(--cream-08); }
+    .topbar-right { display: flex; align-items: center; gap: 1.2rem; }
+    .topbar-user { font-size: 0.75rem; color: var(--cream-50); }
+    .topbar-btn { background: none; border: 1px solid var(--cream-20); color: var(--cream-50); font-family: var(--font); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.4rem 0.9rem; cursor: pointer; transition: all 0.25s; }
+    .topbar-btn:hover { background: var(--cream); color: var(--bg); border-color: var(--cream); }
+
+    /* ---- Tabs ---- */
+    .admin-tabs { display: flex; border-bottom: 1px solid var(--cream-08); padding: 0 2rem; }
+    .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--cream-50); font-family: var(--font); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; padding: 1rem 1.4rem; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; gap: 0.6rem; margin-bottom: -1px; }
+    .tab-btn:hover { color: var(--cream); }
+    .tab-btn.active { color: var(--cream); border-bottom-color: var(--gold); }
+    .new-badge { background: var(--gold); color: var(--bg); font-size: 0.55rem; padding: 0.12rem 0.45rem; border-radius: 2px; min-width: 18px; text-align: center; display: none; }
+
+    /* ---- Admin body ---- */
+    .admin-body { padding: 2.5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    .admin-toolbar { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+    .admin-toolbar h1 { font-size: 1.8rem; font-weight: 300; }
+    .toolbar-count { font-size: 0.68rem; letter-spacing: 0.12em; color: var(--cream-50); margin-top: 0.3rem; }
+    .toolbar-actions { display: flex; gap: 0.7rem; align-items: center; }
+    .seed-btn { background: none; border: 1px solid rgba(170,141,45,0.3); color: var(--gold); font-family: var(--font); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.6rem 1.1rem; cursor: pointer; transition: all 0.25s; opacity: 0.7; }
+    .seed-btn:hover { background: rgba(170,141,45,0.1); opacity: 1; }
+
+    /* ---- Tables (shared) ---- */
+    .pieces-wrap, .inquiries-wrap { overflow-x: auto; }
+    table.p-table, table.i-table { width: 100%; border-collapse: collapse; }
+    table.p-table th, table.i-table th { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); text-align: left; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--cream-08); white-space: nowrap; }
+    table.p-table td, table.i-table td { padding: 0.85rem 0.9rem; border-bottom: 1px solid var(--cream-08); vertical-align: middle; }
+    table.p-table tr:hover td, table.i-table tr:hover td { background: rgba(221,210,177,0.018); cursor: pointer; }
+    .p-thumb { width: 52px; height: 52px; object-fit: cover; display: block; }
+    .p-swatch { width: 52px; height: 52px; }
+    .p-name { font-size: 0.95rem; font-weight: 400; }
+    .p-cat { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cream-50); margin-top: 0.2rem; }
+    .p-mat { font-size: 0.82rem; color: var(--cream-70); }
+    .p-feat { display: inline-block; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(170,141,45,0.35); padding: 0.18rem 0.5rem; }
+    .row-actions { display: flex; gap: 0.45rem; }
+    .act-btn { font-family: var(--font); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.38rem 0.75rem; border: 1px solid; background: none; cursor: pointer; transition: all 0.22s; white-space: nowrap; }
+    .act-edit { border-color: var(--cream-20); color: var(--cream-70); }
+    .act-edit:hover { background: var(--cream); color: var(--bg); border-color: var(--cream); }
+    .act-del { border-color: rgba(180,60,60,0.3); color: rgba(210,90,90,0.75); }
+    .act-del:hover { background: rgba(180,60,60,0.8); color: #fff; border-color: transparent; }
+
+    /* Inquiry status badges */
+    .status-new { display: inline-block; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; background: rgba(170,141,45,0.12); color: var(--gold); border: 1px solid rgba(170,141,45,0.35); padding: 0.18rem 0.5rem; }
+    .status-read { display: inline-block; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream-50); }
+
+    .inq-name { font-size: 0.95rem; font-weight: 400; }
+    .inq-type { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cream-50); margin-top: 0.2rem; }
+    .inq-preview { font-size: 0.82rem; color: var(--cream-70); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Inquiry filter bar */
+    .inq-filter { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .ifilter-btn { background: none; border: 1px solid var(--cream-20); color: var(--cream-50); font-family: var(--font); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.45rem 1rem; cursor: pointer; transition: all 0.25s; }
+    .ifilter-btn.active { background: var(--cream); color: var(--bg); border-color: var(--cream); }
+    .ifilter-btn:hover:not(.active) { border-color: var(--cream-50); color: var(--cream); }
+
+    /* Empty / loading states */
+    .admin-empty { text-align: center; padding: 5rem 2rem; color: var(--cream-50); font-size: 0.9rem; display: none; }
+    .admin-empty p { margin-bottom: 1.8rem; line-height: 1.8; }
+    .admin-loading { text-align: center; padding: 3rem; color: var(--cream-50); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; }
+
+    /* ---- Slide-over panels ---- */
+    .overlay-bg { display: none; position: fixed; inset: 0; background: rgba(20,22,18,0.72); z-index: 300; backdrop-filter: blur(3px); }
+    .overlay-bg.open { display: block; }
+    .form-panel { position: fixed; top: 0; right: 0; width: 100%; max-width: 500px; height: 100vh; overflow-y: auto; background: var(--bg-card); border-left: 1px solid var(--cream-08); z-index: 400; padding: 2.2rem; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+    .form-panel.open { transform: translateX(0); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+    .panel-head h2 { font-size: 1.3rem; font-weight: 300; }
+    .panel-close { background: none; border: none; color: var(--cream-50); font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0 0.4rem; transition: color 0.2s; }
+    .panel-close:hover { color: var(--cream); }
+
+    /* Image upload (piece form) */
+    .img-zone { border: 1px dashed var(--cream-20); padding: 1.8rem 1.2rem; text-align: center; cursor: pointer; position: relative; transition: border-color 0.3s, background 0.3s; margin-bottom: 0.6rem; }
+    .img-zone:hover, .img-zone.drag-over { border-color: var(--gold); background: rgba(170,141,45,0.04); }
+    .img-zone input[type=file] { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+    .img-preview { width: 100%; max-height: 180px; object-fit: cover; display: none; margin-bottom: 0.6rem; }
+    .img-placeholder-icon { font-size: 1.8rem; opacity: 0.3; margin-bottom: 0.5rem; }
+    .img-placeholder-text { font-size: 0.72rem; color: var(--cream-50); line-height: 1.6; }
+    .progress-wrap { display: none; margin-top: 0.6rem; }
+    .progress-bar { height: 2px; background: var(--cream-08); }
+    .progress-fill { height: 2px; background: var(--gold); width: 0; transition: width 0.2s; }
+    .progress-label { font-size: 0.68rem; color: var(--cream-50); margin-top: 0.3rem; }
+    .remove-img-btn { display: none; font-family: var(--font); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; background: none; border: 1px solid rgba(180,60,60,0.3); color: rgba(210,90,90,0.75); padding: 0.35rem 0.8rem; cursor: pointer; margin-bottom: 1.4rem; transition: all 0.25s; }
+    .remove-img-btn:hover { background: rgba(180,60,60,0.8); color: #fff; border-color: transparent; }
+
+    /* Form fields (shared) */
+    .f-row { margin-bottom: 1.6rem; }
+    .f-row label { display: block; font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.45rem; }
+    .f-row input, .f-row select, .f-row textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--cream-20); color: var(--cream); font-family: var(--font); font-size: 0.92rem; font-weight: 300; padding: 0.65rem 0; outline: none; transition: border-color 0.3s; -webkit-appearance: none; appearance: none; border-radius: 0; }
+    .f-row input:focus, .f-row select:focus, .f-row textarea:focus { border-bottom-color: var(--gold); }
+    .f-row input::placeholder, .f-row textarea::placeholder { color: rgba(221,210,177,0.22); }
+    .f-row select option { background: var(--bg-card); color: var(--cream); }
+    .f-row textarea { resize: none; }
+
+    /* Featured toggle */
+    .feat-row { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; border-top: 1px solid var(--cream-08); border-bottom: 1px solid var(--cream-08); margin-bottom: 1.6rem; }
+    .feat-label { font-size: 0.85rem; color: var(--cream-70); }
+    .feat-sub { font-size: 0.72rem; color: var(--cream-50); margin-top: 0.1rem; }
+    .tog { position: relative; width: 42px; height: 23px; flex-shrink: 0; cursor: pointer; }
+    .tog input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .tog-track { position: absolute; inset: 0; background: var(--cream-20); border-radius: 23px; transition: background 0.3s; }
+    .tog-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 17px; height: 17px; background: var(--cream-50); border-radius: 50%; transition: transform 0.3s, background 0.3s; }
+    .tog input:checked ~ .tog-track { background: rgba(170,141,45,0.45); }
+    .tog input:checked ~ .tog-track::after { transform: translateX(19px); background: var(--gold); }
+
+    .panel-msg { font-size: 0.78rem; padding: 0.65rem 0.9rem; margin-bottom: 1rem; display: none; }
+    .panel-msg.err { background: rgba(180,60,60,0.12); color: rgba(220,100,100,0.85); border: 1px solid rgba(180,60,60,0.2); }
+    .panel-msg.ok  { background: rgba(60,140,60,0.1);  color: rgba(100,200,100,0.85); border: 1px solid rgba(60,140,60,0.2); }
+    .panel-actions { display: flex; gap: 0.8rem; margin-top: 1.8rem; }
+    .panel-save { padding: 0.9rem 2.2rem; background: var(--gold); color: var(--bg); border: 1px solid var(--gold); font-family: var(--font); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+    .panel-save:hover { background: transparent; color: var(--gold); }
+    .panel-save:disabled { opacity: 0.5; cursor: default; }
+    .panel-cancel { padding: 0.9rem 2.2rem; background: none; color: var(--cream); border: 1px solid var(--cream-20); font-family: var(--font); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+    .panel-cancel:hover { background: var(--cream); color: var(--bg); border-color: var(--cream); }
+
+    /* Inquiry detail panel */
+    .inq-panel { position: fixed; top: 0; right: 0; width: 100%; max-width: 560px; height: 100vh; overflow-y: auto; background: var(--bg-card); border-left: 1px solid var(--cream-08); z-index: 400; padding: 2.2rem; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+    .inq-panel.open { transform: translateX(0); }
+    .inq-panel-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem; }
+    .inq-panel-head h2 { font-size: 1.3rem; font-weight: 300; }
+    .inq-date { font-size: 0.68rem; letter-spacing: 0.12em; color: var(--cream-50); margin-bottom: 2rem; }
+    .inq-fields { display: flex; flex-direction: column; gap: 0; }
+    .inq-field { padding: 0.9rem 0; border-bottom: 1px solid var(--cream-08); display: grid; grid-template-columns: 130px 1fr; gap: 1rem; align-items: start; }
+    .inq-field:first-child { border-top: 1px solid var(--cream-08); }
+    .inq-field-label { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); padding-top: 0.1rem; }
+    .inq-field-value { font-size: 0.88rem; color: var(--cream-70); line-height: 1.7; word-break: break-word; }
+    .inq-field-value.empty { color: var(--cream-50); font-style: italic; }
+    .inq-actions { display: flex; gap: 0.8rem; margin-top: 2rem; flex-wrap: wrap; }
+    .btn-mark-read { padding: 0.8rem 1.8rem; background: none; color: var(--cream); border: 1px solid var(--cream-20); font-family: var(--font); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+    .btn-mark-read:hover { background: var(--cream); color: var(--bg); border-color: var(--cream); }
+    .btn-del-inq { padding: 0.8rem 1.8rem; background: none; color: rgba(210,90,90,0.75); border: 1px solid rgba(180,60,60,0.3); font-family: var(--font); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+    .btn-del-inq:hover { background: rgba(180,60,60,0.8); color: #fff; border-color: transparent; }
+
+    @media (max-width: 600px) {
+      .form-panel, .inq-panel { max-width: 100%; }
+      .admin-body { padding: 1.5rem 1rem; }
+      table.p-table th:nth-child(3), table.p-table td:nth-child(3) { display: none; }
+      table.i-table th:nth-child(4), table.i-table td:nth-child(4) { display: none; }
+      .inq-field { grid-template-columns: 1fr; gap: 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <!-- ===== LOGIN ===== -->
+  <div class="admin-login" id="loginView">
+    <div class="login-box">
+      <img class="login-logo" src="assets/images/logo.png" alt="Obsidia">
+      <span class="login-label">Collection Manager</span>
+      <form id="loginForm" autocomplete="on">
+        <div class="login-field">
+          <label for="lEmail">Email</label>
+          <input type="email" id="lEmail" autocomplete="username" placeholder="your@email.com" required>
+        </div>
+        <div class="login-field">
+          <label for="lPass">Password</label>
+          <input type="password" id="lPass" autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <div class="login-error" id="loginErr"></div>
+        <button type="submit" class="login-submit">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="admin-dashboard" id="dashView">
+
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <img class="topbar-logo" src="assets/images/logo.png" alt="Obsidia">
+        <span class="topbar-title">Collection Manager</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user" id="userEmail"></span>
+        <button class="topbar-btn" id="signOutBtn">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Tab bar -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" data-tab="pieces">Pieces</button>
+      <button class="tab-btn" data-tab="inquiries">
+        Inquiries
+        <span class="new-badge" id="newBadge"></span>
+      </button>
+    </div>
+
+    <div class="admin-body">
+
+      <!-- ===== PIECES TAB ===== -->
+      <div class="tab-section active" id="tabPieces">
+        <div class="admin-toolbar">
+          <div>
+            <h1>Pieces</h1>
+            <div class="toolbar-count" id="toolbarCount"></div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="seed-btn" id="seedBtn">Seed Default Collection</button>
+            <button class="btn btn-gold" id="addBtn">+ Add New Piece</button>
+          </div>
+        </div>
+        <div class="admin-loading" id="adminLoading">Loading...</div>
+        <div class="admin-empty" id="adminEmpty">
+          <p>No pieces in the collection yet.<br>Add your first piece or seed the default collection.</p>
+          <button class="btn btn-light" id="emptyAddBtn">+ Add New Piece</button>
+        </div>
+        <div class="pieces-wrap">
+          <table class="p-table" id="pTable" style="display:none;">
+            <thead>
+              <tr>
+                <th style="width:68px;">Image</th>
+                <th>Name</th>
+                <th>Material</th>
+                <th style="width:90px;">Featured</th>
+                <th style="width:110px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== INQUIRIES TAB ===== -->
+      <div class="tab-section" id="tabInquiries">
+        <div class="admin-toolbar">
+          <div>
+            <h1>Inquiries</h1>
+            <div class="toolbar-count" id="inqCount"></div>
+          </div>
+          <div class="inq-filter">
+            <button class="ifilter-btn active" data-status="all">All</button>
+            <button class="ifilter-btn" data-status="new">New</button>
+            <button class="ifilter-btn" data-status="read">Read</button>
+          </div>
+        </div>
+        <div class="admin-loading" id="inqLoading">Loading...</div>
+        <div class="admin-empty" id="inqEmpty">
+          <p>No inquiries yet. They'll appear here as soon as someone submits the commission form.</p>
+        </div>
+        <div class="inquiries-wrap">
+          <table class="i-table" id="iTable" style="display:none;">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Phone</th>
+                <th style="width:80px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="iTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /admin-body -->
+  </div><!-- /dashView -->
+
+  <!-- ===== PIECE FORM PANEL ===== -->
+  <div class="overlay-bg" id="overlayBg"></div>
+
+  <div class="form-panel" id="formPanel">
+    <div class="panel-head">
+      <h2 id="panelTitle">Add New Piece</h2>
+      <button class="panel-close" id="panelClose">×</button>
+    </div>
+    <form id="pieceForm" autocomplete="off">
+      <input type="hidden" id="editId">
+      <input type="hidden" id="existUrl">
+      <input type="hidden" id="existPath">
+      <div class="img-zone" id="imgZone">
+        <input type="file" id="imgFile" accept="image/*">
+        <img class="img-preview" id="imgPreview" alt="Preview">
+        <div id="imgPlaceholder">
+          <div class="img-placeholder-icon">⬆</div>
+          <div class="img-placeholder-text">Click to upload or drag &amp; drop<br><small>PNG, JPG, WEBP — max 10 MB</small></div>
+        </div>
+        <div class="progress-wrap" id="progWrap">
+          <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+          <div class="progress-label" id="progLabel">Uploading…</div>
+        </div>
+      </div>
+      <button type="button" class="remove-img-btn" id="removeImgBtn">Remove Image</button>
+      <div class="f-row">
+        <label for="fName">Piece Name *</label>
+        <input type="text" id="fName" placeholder="e.g. The Meridian Chair" required>
+      </div>
+      <div class="f-row">
+        <label for="fCat">Category *</label>
+        <select id="fCat" required>
+          <option value="" disabled selected>Select category</option>
+          <option value="seating">Seating</option>
+          <option value="tables">Tables</option>
+          <option value="storage">Storage</option>
+          <option value="art-decor">Art &amp; Decor</option>
+        </select>
+      </div>
+      <div class="f-row">
+        <label for="fMat">Material / Subtitle *</label>
+        <input type="text" id="fMat" placeholder="e.g. Solid Walnut · Hand-Stitched Leather" required>
+      </div>
+      <div class="f-row">
+        <label for="fPalette">Color Swatch (shown when no image)</label>
+        <select id="fPalette">
+          <option value="pi-walnut">Walnut</option>
+          <option value="pi-oak">White Oak</option>
+          <option value="pi-teak">Teak</option>
+          <option value="pi-travertine">Travertine</option>
+          <option value="pi-iron">Iron / Steel</option>
+          <option value="pi-canvas">Canvas / Linen</option>
+          <option value="pi-marble">Black Marble</option>
+          <option value="pi-ash">Pale Ash</option>
+          <option value="pi-smoked">Smoked Oak</option>
+        </select>
+      </div>
+      <div class="feat-row">
+        <div>
+          <div class="feat-label">Featured on Home Page</div>
+          <div class="feat-sub">Appears in the featured collection section</div>
+        </div>
+        <label class="tog">
+          <input type="checkbox" id="fFeatured">
+          <span class="tog-track"></span>
+        </label>
+      </div>
+      <div class="panel-msg" id="panelMsg"></div>
+      <div class="panel-actions">
+        <button type="submit" class="panel-save" id="saveBtn">Save Piece</button>
+        <button type="button" class="panel-cancel" id="cancelBtn">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== INQUIRY DETAIL PANEL ===== -->
+  <div class="inq-panel" id="inqPanel">
+    <div class="inq-panel-head">
+      <h2>Commission Inquiry</h2>
+      <button class="panel-close" id="inqPanelClose">×</button>
+    </div>
+    <div class="inq-date" id="inqPanelDate"></div>
+    <div class="inq-fields" id="inqPanelFields"></div>
+    <div class="inq-actions">
+      <button class="btn-mark-read" id="inqMarkRead">Mark as Read</button>
+      <button class="btn-del-inq" id="inqDelete">Delete</button>
+    </div>
+  </div>
+
+  <script>
+    const db      = firebase.firestore();
+    const auth    = firebase.auth();
+    const storage = firebase.storage();
+
+    const DEFAULT_PIECES = [
+      { name:'The Meridian Chair',    category:'seating',   material:'Solid Walnut · Hand-Stitched Leather', paletteClass:'pi-walnut',     featured:true  },
+      { name:'Solstice Dining Table', category:'tables',    material:'White Oak · Blackened Steel',          paletteClass:'pi-oak',        featured:true  },
+      { name:'Vesper Cabinet',        category:'storage',   material:'Hand-Oiled Teak · Brass',              paletteClass:'pi-teak',       featured:false },
+      { name:'Halo Side Table',       category:'tables',    material:'Travertine · Bronze',                  paletteClass:'pi-travertine', featured:true  },
+      { name:'Arc Floor Lamp',        category:'art-decor', material:'Forged Iron · Linen Shade',            paletteClass:'pi-iron',       featured:false },
+      { name:'Lacuna Daybed',         category:'seating',   material:'Reclaimed Pine · Raw Canvas',          paletteClass:'pi-canvas',     featured:false },
+      { name:'Obsidian Shelf',        category:'storage',   material:'Black Marble · Matte Steel',           paletteClass:'pi-marble',     featured:false },
+      { name:'Serene Credenza',       category:'storage',   material:'Pale Ash · Frosted Glass',             paletteClass:'pi-ash',        featured:false },
+      { name:'Ember Stool',           category:'seating',   material:'Smoked Oak · Raw Leather',             paletteClass:'pi-smoked',     featured:false },
+    ];
+
+    // ── Auth ──────────────────────────────────────────────
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashView').style.display = 'block';
+        document.getElementById('userEmail').textContent = user.email;
+        startPiecesListener();
+        startInquiriesListener();
+      } else {
+        document.getElementById('loginView').style.display = 'flex';
+        document.getElementById('dashView').style.display = 'none';
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = document.getElementById('loginErr');
+      const btn = e.target.querySelector('button');
+      err.style.display = 'none';
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      try {
+        await auth.signInWithEmailAndPassword(
+          document.getElementById('lEmail').value,
+          document.getElementById('lPass').value
+        );
+      } catch (ex) {
+        err.textContent = (ex.code === 'auth/invalid-credential' || ex.code === 'auth/wrong-password' || ex.code === 'auth/user-not-found')
+          ? 'Incorrect email or password.'
+          : 'Sign-in failed. Try again.';
+        err.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Sign In';
+      }
+    });
+
+    document.getElementById('signOutBtn').addEventListener('click', () => auth.signOut());
+
+    // ── Tab switching ─────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+      });
+    });
+
+    // ── Pieces ────────────────────────────────────────────
+    function startPiecesListener() {
+      const loading = document.getElementById('adminLoading');
+      const empty   = document.getElementById('adminEmpty');
+      const table   = document.getElementById('pTable');
+      loading.style.display = 'block'; table.style.display = 'none'; empty.style.display = 'none';
+
+      db.collection('pieces').orderBy('order').onSnapshot(snap => {
+        loading.style.display = 'none';
+        const pieces = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('toolbarCount').textContent = pieces.length + ' piece' + (pieces.length !== 1 ? 's' : '');
+        if (pieces.length === 0) { empty.style.display = 'block'; table.style.display = 'none'; }
+        else { empty.style.display = 'none'; table.style.display = 'table'; renderPieces(pieces); }
+      });
+    }
+
+    function renderPieces(pieces) {
+      const tbody = document.getElementById('pTableBody');
+      tbody.innerHTML = '';
+      pieces.forEach(p => {
+        const tr = document.createElement('tr');
+        const thumb = p.imageUrl
+          ? `<img class="p-thumb" src="${p.imageUrl}" alt="${esc(p.name)}">`
+          : `<div class="p-swatch ${p.paletteClass || 'pi-walnut'}"></div>`;
+        tr.innerHTML = `
+          <td>${thumb}</td>
+          <td><div class="p-name">${esc(p.name)}</div><div class="p-cat">${esc(p.category||'')}</div></td>
+          <td><span class="p-mat">${esc(p.material)}</span></td>
+          <td>${p.featured ? '<span class="p-feat">Featured</span>' : ''}</td>
+          <td><div class="row-actions">
+            <button class="act-btn act-edit" onclick="openEdit('${p.id}')">Edit</button>
+            <button class="act-btn act-del"  onclick="doDelete('${p.id}','${esc(p.name)}','${p.imagePath||''}')">Delete</button>
+          </div></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Inquiries ─────────────────────────────────────────
+    let allInquiries = [];
+    let currentFilter = 'all';
+    let activeInquiryId = null;
+
+    function startInquiriesListener() {
+      const loading = document.getElementById('inqLoading');
+      loading.style.display = 'block';
+      document.getElementById('iTable').style.display = 'none';
+      document.getElementById('inqEmpty').style.display = 'none';
+
+      db.collection('inquiries').orderBy('submittedAt', 'desc').onSnapshot(snap => {
+        loading.style.display = 'none';
+        allInquiries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const newCount = allInquiries.filter(i => i.status === 'new').length;
+        const badge = document.getElementById('newBadge');
+        if (newCount > 0) { badge.textContent = newCount; badge.style.display = 'inline-block'; }
+        else { badge.style.display = 'none'; }
+        document.getElementById('inqCount').textContent = allInquiries.length + ' inquiry' + (allInquiries.length !== 1 ? 'ies' : '');
+        renderInquiries();
+      });
+    }
+
+    function renderInquiries() {
+      const filtered = currentFilter === 'all' ? allInquiries : allInquiries.filter(i => i.status === currentFilter);
+      const empty = document.getElementById('inqEmpty');
+      const table = document.getElementById('iTable');
+      if (filtered.length === 0) { empty.style.display = 'block'; table.style.display = 'none'; }
+      else { empty.style.display = 'none'; table.style.display = 'table'; }
+      const tbody = document.getElementById('iTableBody');
+      tbody.innerHTML = '';
+      filtered.forEach(inq => {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        const d = inq.submittedAt ? inq.submittedAt.toDate() : null;
+        const dateStr = d ? d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+        const statusHtml = inq.status === 'new'
+          ? '<span class="status-new">New</span>'
+          : '<span class="status-read">Read</span>';
+        const typeLabel = { seating:'Seating', tables:'Tables', storage:'Storage', 'art-decor':'Art & Decor' }[inq.pieceType] || inq.pieceType || '—';
+        tr.innerHTML = `
+          <td>${esc(dateStr)}</td>
+          <td><div class="inq-name">${esc(inq.name||'—')}</div></td>
+          <td><span class="inq-type">${esc(typeLabel)}</span></td>
+          <td>${esc(inq.phone||'—')}</td>
+          <td>${statusHtml}</td>`;
+        tr.addEventListener('click', () => openInquiry(inq.id));
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.querySelectorAll('.ifilter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ifilter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.status;
+        renderInquiries();
+      });
+    });
+
+    // ── Inquiry detail panel ──────────────────────────────
+    function openInquiry(id) {
+      const inq = allInquiries.find(i => i.id === id);
+      if (!inq) return;
+      activeInquiryId = id;
+
+      const d = inq.submittedAt ? inq.submittedAt.toDate() : null;
+      document.getElementById('inqPanelDate').textContent = d
+        ? d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+        : 'Date unknown';
+
+      const fields = [
+        ['Name',        inq.name],
+        ['Email',       inq.email],
+        ['Phone',       inq.phone],
+        ['Piece Type',  ({ seating:'Seating', tables:'Tables', storage:'Storage', 'art-decor':'Art & Decor' })[inq.pieceType] || inq.pieceType],
+        ['Description', inq.description],
+        ['Materials',   inq.materials],
+        ['Timeline',    inq.timeline],
+        ['Referral',    inq.referral],
+        ['Notes',       inq.notes],
+        ['Status',      inq.status === 'new' ? 'New — not yet reviewed' : 'Read'],
+      ];
+
+      document.getElementById('inqPanelFields').innerHTML = fields
+        .map(([label, val]) => `
+          <div class="inq-field">
+            <span class="inq-field-label">${label}</span>
+            <span class="inq-field-value${!val ? ' empty' : ''}">${val ? esc(String(val)) : 'Not provided'}</span>
+          </div>`).join('');
+
+      const markBtn = document.getElementById('inqMarkRead');
+      markBtn.textContent = inq.status === 'new' ? 'Mark as Read' : 'Mark as New';
+      markBtn.style.display = 'inline-block';
+
+      overlayBg.classList.add('open');
+      document.getElementById('inqPanel').classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      // Auto-mark as read when opened
+      if (inq.status === 'new') {
+        db.collection('inquiries').doc(id).update({ status: 'read' }).catch(() => {});
+      }
+    }
+
+    function closeInquiry() {
+      overlayBg.classList.remove('open');
+      document.getElementById('inqPanel').classList.remove('open');
+      document.body.style.overflow = '';
+      activeInquiryId = null;
+    }
+
+    document.getElementById('inqPanelClose').addEventListener('click', closeInquiry);
+
+    document.getElementById('inqMarkRead').addEventListener('click', async () => {
+      if (!activeInquiryId) return;
+      const inq = allInquiries.find(i => i.id === activeInquiryId);
+      const newStatus = inq && inq.status === 'new' ? 'read' : 'new';
+      await db.collection('inquiries').doc(activeInquiryId).update({ status: newStatus });
+      closeInquiry();
+    });
+
+    document.getElementById('inqDelete').addEventListener('click', async () => {
+      if (!activeInquiryId) return;
+      const inq = allInquiries.find(i => i.id === activeInquiryId);
+      if (!confirm(`Delete inquiry from "${inq ? inq.name : 'this person'}"?\nThis cannot be undone.`)) return;
+      await db.collection('inquiries').doc(activeInquiryId).delete();
+      closeInquiry();
+    });
+
+    // ── Piece form open/close ─────────────────────────────
+    const overlayBg = document.getElementById('overlayBg');
+    const formPanel = document.getElementById('formPanel');
+
+    function openPanel() {
+      overlayBg.classList.add('open');
+      formPanel.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closePanel() {
+      overlayBg.classList.remove('open');
+      formPanel.classList.remove('open');
+      document.getElementById('inqPanel').classList.remove('open');
+      document.body.style.overflow = '';
+      document.getElementById('pieceForm').reset();
+      resetImg();
+      document.getElementById('panelMsg').style.display = 'none';
+      pendingFile = null; imgRemoved = false;
+    }
+
+    overlayBg.addEventListener('click', () => {
+      closePanel();
+      closeInquiry();
+    });
+    document.getElementById('panelClose').addEventListener('click', closePanel);
+    document.getElementById('cancelBtn').addEventListener('click', closePanel);
+    document.getElementById('addBtn').addEventListener('click', openAdd);
+    document.getElementById('emptyAddBtn').addEventListener('click', openAdd);
+
+    function openAdd() {
+      ['editId','existUrl','existPath'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('panelTitle').textContent = 'Add New Piece';
+      document.getElementById('fFeatured').checked = false;
+      openPanel();
+    }
+
+    async function openEdit(id) {
+      const doc = await db.collection('pieces').doc(id).get();
+      const p = doc.data();
+      document.getElementById('editId').value = id;
+      document.getElementById('existUrl').value = p.imageUrl || '';
+      document.getElementById('existPath').value = p.imagePath || '';
+      document.getElementById('panelTitle').textContent = 'Edit Piece';
+      document.getElementById('fName').value = p.name || '';
+      document.getElementById('fCat').value = p.category || '';
+      document.getElementById('fMat').value = p.material || '';
+      document.getElementById('fPalette').value = p.paletteClass || 'pi-walnut';
+      document.getElementById('fFeatured').checked = !!p.featured;
+      pendingFile = null; imgRemoved = false;
+      document.getElementById('panelMsg').style.display = 'none';
+      if (p.imageUrl) {
+        document.getElementById('imgPreview').src = p.imageUrl;
+        document.getElementById('imgPreview').style.display = 'block';
+        document.getElementById('imgPlaceholder').style.display = 'none';
+        document.getElementById('removeImgBtn').style.display = 'inline-block';
+      } else { resetImg(); }
+      openPanel();
+    }
+
+    // ── Image handling ────────────────────────────────────
+    let pendingFile = null;
+    let imgRemoved  = false;
+
+    document.getElementById('imgFile').addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return; setPendingFile(f);
+    });
+    document.getElementById('removeImgBtn').addEventListener('click', () => {
+      pendingFile = null; imgRemoved = true; resetImg();
+    });
+    function setPendingFile(f) {
+      pendingFile = f; imgRemoved = false;
+      const r = new FileReader();
+      r.onload = ev => {
+        document.getElementById('imgPreview').src = ev.target.result;
+        document.getElementById('imgPreview').style.display = 'block';
+        document.getElementById('imgPlaceholder').style.display = 'none';
+        document.getElementById('removeImgBtn').style.display = 'inline-block';
+      };
+      r.readAsDataURL(f);
+    }
+    function resetImg() {
+      document.getElementById('imgPreview').src = '';
+      document.getElementById('imgPreview').style.display = 'none';
+      document.getElementById('imgPlaceholder').style.display = 'block';
+      document.getElementById('removeImgBtn').style.display = 'none';
+      document.getElementById('progWrap').style.display = 'none';
+      document.getElementById('imgFile').value = '';
+    }
+    const imgZone = document.getElementById('imgZone');
+    imgZone.addEventListener('dragover', e => { e.preventDefault(); imgZone.classList.add('drag-over'); });
+    imgZone.addEventListener('dragleave', () => imgZone.classList.remove('drag-over'));
+    imgZone.addEventListener('drop', e => {
+      e.preventDefault(); imgZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) setPendingFile(f);
+    });
+
+    // ── Save piece ────────────────────────────────────────
+    document.getElementById('pieceForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      document.getElementById('panelMsg').style.display = 'none';
+
+      const editId    = document.getElementById('editId').value;
+      const existUrl  = document.getElementById('existUrl').value;
+      const existPath = document.getElementById('existPath').value;
+      let imageUrl = existUrl, imagePath = existPath;
+
+      try {
+        if (imgRemoved && existPath) {
+          try { await storage.ref(existPath).delete(); } catch {}
+          imageUrl = ''; imagePath = '';
+        }
+        if (pendingFile) {
+          if (existPath) { try { await storage.ref(existPath).delete(); } catch {} }
+          document.getElementById('progWrap').style.display = 'block';
+          document.getElementById('imgPlaceholder').style.display = 'none';
+          const ext  = pendingFile.name.split('.').pop().toLowerCase();
+          const path = `pieces/${Date.now()}.${ext}`;
+          const ref  = storage.ref(path);
+          const task = ref.put(pendingFile);
+          await new Promise((res, rej) => {
+            task.on('state_changed',
+              s => {
+                const pct = Math.round(s.bytesTransferred / s.totalBytes * 100);
+                document.getElementById('progFill').style.width = pct + '%';
+                document.getElementById('progLabel').textContent = `Uploading… ${pct}%`;
+              }, rej,
+              async () => { imageUrl = await ref.getDownloadURL(); imagePath = path; res(); }
+            );
+          });
+        }
+        const data = {
+          name: document.getElementById('fName').value.trim(),
+          category: document.getElementById('fCat').value,
+          material: document.getElementById('fMat').value.trim(),
+          paletteClass: document.getElementById('fPalette').value,
+          featured: document.getElementById('fFeatured').checked,
+          imageUrl, imagePath,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (editId) {
+          await db.collection('pieces').doc(editId).update(data);
+        } else {
+          const n = (await db.collection('pieces').get()).size;
+          await db.collection('pieces').add({ ...data, order: n, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+        closePanel();
+      } catch (err) {
+        const msg = document.getElementById('panelMsg');
+        msg.textContent = err.message; msg.className = 'panel-msg err'; msg.style.display = 'block';
+      } finally {
+        saveBtn.disabled = false; saveBtn.textContent = 'Save Piece';
+      }
+    });
+
+    // ── Delete piece ──────────────────────────────────────
+    async function doDelete(id, name, imagePath) {
+      if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return;
+      try {
+        if (imagePath) { try { await storage.ref(imagePath).delete(); } catch {} }
+        await db.collection('pieces').doc(id).delete();
+      } catch (err) { alert('Delete failed: ' + err.message); }
+    }
+
+    // ── Seed default collection ───────────────────────────
+    document.getElementById('seedBtn').addEventListener('click', async () => {
+      const existing = (await db.collection('pieces').get()).size;
+      if (existing > 0 && !confirm(`There are already ${existing} piece(s). Seed the 9 defaults on top?`)) return;
+      const btn = document.getElementById('seedBtn');
+      btn.disabled = true; btn.textContent = 'Seeding…';
+      try {
+        const batch = db.batch();
+        const base  = (await db.collection('pieces').get()).size;
+        DEFAULT_PIECES.forEach((p, i) => {
+          const ref = db.collection('pieces').doc();
+          batch.set(ref, { ...p, imageUrl:'', imagePath:'', order: base + i,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        });
+        await batch.commit();
+        btn.textContent = 'Seeded!';
+        setTimeout(() => { btn.disabled = false; btn.textContent = 'Seed Default Collection'; }, 2000);
+      } catch (err) {
+        alert('Seed failed: ' + err.message);
+        btn.disabled = false; btn.textContent = 'Seed Default Collection';
+      }
+    });
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+  </script>
+
+</body>
+</html>

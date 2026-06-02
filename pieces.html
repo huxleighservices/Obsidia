@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Collection — Obsidia</title>
+  <meta name="description" content="Bespoke furniture pieces by Obsidia — each one singular, each one built by hand.">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/images/logo.png" alt="Obsidia">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="pieces.html" class="active">Pieces</a></li>
+      <li><a href="start-now.html" class="nav-cta">Start Now</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Page Header + Filter -->
+  <div class="pieces-header">
+    <div class="pieces-header-text fade-up">
+      <span class="label">The Collection</span>
+      <div class="divider-gold"></div>
+      <h1>Selected Works</h1>
+    </div>
+    <div class="pieces-filter fade-up stagger-2">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="seating">Seating</button>
+      <button class="filter-btn" data-filter="tables">Tables</button>
+      <button class="filter-btn" data-filter="storage">Storage</button>
+      <button class="filter-btn" data-filter="art-decor">Art &amp; Decor</button>
+    </div>
+  </div>
+
+  <!-- Pieces Grid — populated from Firestore -->
+  <div class="pieces-grid" id="piecesGrid"></div>
+
+  <!-- Commission CTA -->
+  <section class="atelier-section fade-in">
+    <span class="label">Don't see what you have in mind?</span>
+    <div class="divider-gold" style="margin: 1rem auto;"></div>
+    <h2>Every piece we build begins<br>as a conversation.</h2>
+    <p>
+      Tell us about the space, the function, the feeling you're after.
+      We will listen — and then we will build it.
+    </p>
+    <a href="start-now.html" class="btn btn-light">Begin Your Commission</a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img class="footer-brand-logo" src="assets/images/logo.png" alt="Obsidia">
+        <p class="footer-tagline">
+          Singular, hand-built furniture for those who know exactly what they want.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="pieces.html">Pieces</a></li>
+          <li><a href="start-now.html">Start Now</a></li>
+        </ul>
+      </div>
+      <div class="footer-mark">
+        <img src="assets/images/brandmark.png" alt="Obsidia — A Movement Welding Brand">
+      </div>
+      <div class="footer-col">
+        <h4>Collection</h4>
+        <ul>
+          <li><a href="pieces.html">Seating</a></li>
+          <li><a href="pieces.html">Tables</a></li>
+          <li><a href="pieces.html">Storage</a></li>
+          <li><a href="pieces.html">Art &amp; Decor</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Atelier</h4>
+        <p>Inquiries by appointment.<br><br>
+          440-334-9168<br><br>
+          Proudly serving the<br>Greater Cleveland, Ohio area.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 Obsidia. All rights reserved.</span>
+      <span class="footer-copy">Made by hand.</span>
+      <a href="admin.html" class="footer-admin-link">Employee Login</a>
+    </div>
+  </footer>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    loadPiecesGrid(document.getElementById('piecesGrid'));
+  </script>
+</body>
+</html>
