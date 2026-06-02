@@ -269,13 +269,12 @@
           // 1 — Save to Firestore (source of truth)
           await firebase.firestore().collection('inquiries').add(data);
 
-          // 2 — Send email via Resend (best-effort, silent on failure)
-          try {
-            if (RESEND_API_KEY !== 'YOUR_RESEND_API_KEY') {
-              const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-              const typeLabel   = typeLabels[data.pieceType] || data.pieceType || 'Not specified';
+          // 2 — Send email via Resend (fire-and-forget, never blocks confirmation)
+          if (RESEND_API_KEY !== 'YOUR_RESEND_API_KEY') {
+            const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+            const typeLabel   = typeLabels[data.pieceType] || data.pieceType || 'Not specified';
 
-              await fetch('https://api.resend.com/emails', {
+            fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${RESEND_API_KEY}`,
@@ -304,10 +303,7 @@
                       ${data.notes ? `<h3 style="font-weight:400;margin-top:1.5rem;">Additional Notes</h3><p style="color:#555;line-height:1.7;">${data.notes}</p>` : ''}
                     </div>`
                 })
-              });
-            }
-          } catch (emailErr) {
-            console.warn('Email notification failed (inquiry was still saved to admin):', emailErr);
+              }).catch(err => console.warn('Email notification failed (inquiry was still saved to admin):', err));
           }
 
           // 3 — Show confirmation
