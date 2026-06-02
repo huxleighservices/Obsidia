@@ -303,7 +303,10 @@
                     ${data.notes ? `<h3 style="font-weight:400;margin-top:1.5rem;">Additional Notes</h3><p style="color:#555;line-height:1.7;">${data.notes}</p>` : ''}
                   </div>`
               })
-            }).catch(err => console.warn('Email send failed:', err));
+            }).then(res => res.json().then(j => {
+                if (!res.ok) console.warn('Resend error:', res.status, j);
+                else console.log('Email sent:', j.id);
+              })).catch(err => console.warn('Email send failed:', err));
           }
 
           // 3 — Show confirmation immediately
