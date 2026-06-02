@@ -230,12 +230,11 @@
     </div>
   </footer>
 
-  <!-- Firebase + EmailJS -->
+  <!-- Firebase + Resend -->
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="js/firebase-config.js"></script>
-  <script src="js/emailjs-config.js"></script>
+  <script src="js/email-config.js"></script>
   <script src="js/main.js"></script>
   <script>
     const inquiryForm    = document.querySelector('.inquiry-form');
@@ -248,6 +247,10 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Submitting…';
 
+        const typeLabels = {
+          seating: 'Seating', tables: 'Tables',
+          storage: 'Storage', 'art-decor': 'Art & Decor', custom: 'Custom'
+        };
         const data = {
           name:        document.getElementById('name').value.trim(),
           email:       document.getElementById('email').value.trim(),
@@ -266,25 +269,45 @@
           // 1 — Save to Firestore (source of truth)
           await firebase.firestore().collection('inquiries').add(data);
 
-          // 2 — Send email notification (best-effort, silent on failure)
+          // 2 — Send email via Resend (best-effort, silent on failure)
           try {
-            if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-              emailjs.init(EMAILJS_PUBLIC_KEY);
-              await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                from_name:    data.name,
-                from_email:   data.email,
-                from_phone:   data.phone,
-                piece_type:   data.pieceType,
-                description:  data.description,
-                materials:    data.materials,
-                timeline:     data.timeline,
-                referral:     data.referral,
-                notes:        data.notes,
-                submitted_at: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+            if (RESEND_API_KEY !== 'YOUR_RESEND_API_KEY') {
+              const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+              const typeLabel   = typeLabels[data.pieceType] || data.pieceType || 'Not specified';
+
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RESEND_API_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  from:    RESEND_FROM,
+                  to:      ['sales@huxleigh.com'],
+                  subject: `New Commission Inquiry — ${data.name}`,
+                  html: `
+                    <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#333;">
+                      <h2 style="font-weight:300;border-bottom:1px solid #ddd;padding-bottom:1rem;">
+                        New Commission Inquiry
+                      </h2>
+                      <p style="color:#888;font-size:0.85rem;margin-bottom:2rem;">${submittedAt}</p>
+                      <table style="width:100%;border-collapse:collapse;">
+                        ${row('Name',        data.name)}
+                        ${row('Email',       data.email || '—')}
+                        ${row('Phone',       data.phone || '—')}
+                        ${row('Piece Type',  typeLabel)}
+                        ${row('Materials',   data.materials || '—')}
+                        ${row('Timeline',    data.timeline || '—')}
+                        ${row('Referral',    data.referral || '—')}
+                      </table>
+                      ${data.description ? `<h3 style="font-weight:400;margin-top:2rem;">Description</h3><p style="color:#555;line-height:1.7;">${data.description}</p>` : ''}
+                      ${data.notes ? `<h3 style="font-weight:400;margin-top:1.5rem;">Additional Notes</h3><p style="color:#555;line-height:1.7;">${data.notes}</p>` : ''}
+                    </div>`
+                })
               });
             }
           } catch (emailErr) {
-            console.warn('Email notification failed (form was still saved):', emailErr);
+            console.warn('Email notification failed (inquiry was still saved to admin):', emailErr);
           }
 
           // 3 — Show confirmation
@@ -299,6 +322,13 @@
           console.error('Submission error:', err);
         }
       });
+
+      function row(label, value) {
+        return `<tr>
+          <td style="padding:0.6rem 1rem 0.6rem 0;color:#999;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;vertical-align:top;white-space:nowrap;">${label}</td>
+          <td style="padding:0.6rem 0;color:#333;border-bottom:1px solid #f0f0f0;">${value}</td>
+        </tr>`;
+      }
     }
   </script>
 </body>
