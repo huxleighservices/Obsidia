@@ -485,15 +485,14 @@ p  { font-weight: 300; letter-spacing: 0.01em; }
 
 .featured-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 3px;
   margin-bottom: clamp(3rem, 6vw, 5rem);
-  min-height: 640px;
+  align-items: start;
 }
 
 .featured-grid .piece-card:first-child {
-  grid-row: span 2;
+  grid-row: span 1;
 }
 
 /* ==============================
@@ -1076,13 +1075,7 @@ p  { font-weight: 300; letter-spacing: 0.01em; }
 
 @media (max-width: 1024px) {
   .featured-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
-  }
-  .featured-grid .piece-card:first-child {
-    grid-column: span 2;
-    grid-row: span 1;
-    aspect-ratio: 16/8;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   .home-about { grid-template-columns: 1fr; }
@@ -1115,7 +1108,6 @@ p  { font-weight: 300; letter-spacing: 0.01em; }
   .nav-toggle { display: flex; }
 
   .featured-grid { grid-template-columns: 1fr; }
-  .featured-grid .piece-card:first-child { grid-column: span 1; aspect-ratio: 4/5; }
 
   .pieces-grid { grid-template-columns: 1fr; }
   .pieces-header { align-items: flex-start; flex-direction: column; }
