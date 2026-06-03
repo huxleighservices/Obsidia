@@ -230,11 +230,10 @@
     </div>
   </footer>
 
-  <!-- Firebase + Resend -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
-  <script src="js/email-config.js"></script>
   <script src="js/main.js"></script>
   <script>
     const inquiryForm    = document.querySelector('.inquiry-form');
@@ -247,10 +246,6 @@
         submitBtn.disabled = true;
         submitBtn.textContent = 'Submitting…';
 
-        const typeLabels = {
-          seating: 'Seating', tables: 'Tables',
-          storage: 'Storage', 'art-decor': 'Art & Decor', custom: 'Custom'
-        };
         const data = {
           name:        document.getElementById('name').value.trim(),
           email:       document.getElementById('email').value.trim(),
@@ -262,65 +257,19 @@
           referral:    document.getElementById('referral').value.trim(),
           notes:       document.getElementById('notes').value.trim(),
           status:      'new',
-          submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+          submittedAt: new Date().toISOString()
         };
 
-        // 1 — Save to Firestore in background (non-blocking)
-        firebase.firestore().collection('inquiries').add(data)
-          .then(ref => console.log('Inquiry saved:', ref.id))
-          .catch(err => console.warn('Firestore save failed:', err));
+        try {
+          await firebase.firestore().collection('inquiries').add(data);
+        } catch (err) {
+          console.error('Firestore error:', err);
+        }
 
-        // 2 — Send email via Resend in background (non-blocking)
-          if (typeof RESEND_API_KEY !== 'undefined' && RESEND_API_KEY !== 'YOUR_RESEND_API_KEY') {
-            const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-            const typeLabel   = typeLabels[data.pieceType] || data.pieceType || 'Not specified';
-            fetch('https://api.resend.com/emails', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${RESEND_API_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                from:    RESEND_FROM,
-                to:      ['sales@huxleigh.com'],
-                subject: `New Commission Inquiry — ${data.name}`,
-                html: `
-                  <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#333;">
-                    <h2 style="font-weight:300;border-bottom:1px solid #ddd;padding-bottom:1rem;">
-                      New Commission Inquiry
-                    </h2>
-                    <p style="color:#888;font-size:0.85rem;margin-bottom:2rem;">${submittedAt}</p>
-                    <table style="width:100%;border-collapse:collapse;">
-                      ${row('Name',        data.name)}
-                      ${row('Email',       data.email || '—')}
-                      ${row('Phone',       data.phone || '—')}
-                      ${row('Piece Type',  typeLabel)}
-                      ${row('Materials',   data.materials || '—')}
-                      ${row('Timeline',    data.timeline || '—')}
-                      ${row('Referral',    data.referral || '—')}
-                    </table>
-                    ${data.description ? `<h3 style="font-weight:400;margin-top:2rem;">Description</h3><p style="color:#555;line-height:1.7;">${data.description}</p>` : ''}
-                    ${data.notes ? `<h3 style="font-weight:400;margin-top:1.5rem;">Additional Notes</h3><p style="color:#555;line-height:1.7;">${data.notes}</p>` : ''}
-                  </div>`
-              })
-            }).then(res => res.json().then(j => {
-                if (!res.ok) console.warn('Resend error:', res.status, j);
-                else console.log('Email sent:', j.id);
-              })).catch(err => console.warn('Email send failed:', err));
-          }
-
-          // 3 — Show confirmation immediately
-          inquiryForm.classList.add('submitted');
-          confirmSection.classList.add('show');
-          window.scrollTo({ top: inquiryForm.parentElement.offsetTop, behavior: 'smooth' });
+        inquiryForm.classList.add('submitted');
+        confirmSection.classList.add('show');
+        window.scrollTo({ top: inquiryForm.parentElement.offsetTop, behavior: 'smooth' });
       });
-
-      function row(label, value) {
-        return `<tr>
-          <td style="padding:0.6rem 1rem 0.6rem 0;color:#999;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;vertical-align:top;white-space:nowrap;">${label}</td>
-          <td style="padding:0.6rem 0;color:#333;border-bottom:1px solid #f0f0f0;">${value}</td>
-        </tr>`;
-      }
     }
   </script>
 </body>
