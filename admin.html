@@ -516,7 +516,7 @@
       filtered.forEach(inq => {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
-        const d = inq.submittedAt ? inq.submittedAt.toDate() : null;
+        const d = inq.submittedAt ? (typeof inq.submittedAt.toDate === 'function' ? inq.submittedAt.toDate() : new Date(inq.submittedAt)) : null;
         const dateStr = d ? d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
         const statusHtml = inq.status === 'new'
           ? '<span class="status-new">New</span>'
@@ -548,7 +548,7 @@
       if (!inq) return;
       activeInquiryId = id;
 
-      const d = inq.submittedAt ? inq.submittedAt.toDate() : null;
+      const d = inq.submittedAt ? (typeof inq.submittedAt.toDate === 'function' ? inq.submittedAt.toDate() : new Date(inq.submittedAt)) : null;
       document.getElementById('inqPanelDate').textContent = d
         ? d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
         : 'Date unknown';
