@@ -260,11 +260,8 @@
           submittedAt: new Date().toISOString()
         };
 
-        try {
-          await firebase.firestore().collection('inquiries').add(data);
-        } catch (err) {
-          console.error('Firestore error:', err);
-        }
+        firebase.firestore().collection('inquiries').add(data)
+          .catch(err => console.error('Firestore error:', err));
 
         inquiryForm.classList.add('submitted');
         confirmSection.classList.add('show');
